@@ -42,7 +42,13 @@ jobs:
         id: date
         if: contains(env.DOCKER_BUILD_ENABLED, 'true')
         shell: bash
-        run: echo "::set-output name=date::$(date +'%Y-%m-%dT%H:%M:%S')" >> $GITHUB_OUTPUT
+        run: echo "::set-output name=date::$(date +'%Y-%m-%d%H:%M:%S')" >> $GITHUB_OUTPUT
+
+      -name: Create tag
+        run: echo $TAG_NAME - $RELEASE_NAME
+        env:
+          TAG_NAME: ${{ steps.date.outputs.date }}
+          BRANCH_NAME: ${{ steps.ci_branch_name.outputs.branch }}
 
       - name: Build and Push branch
         if: contains(env.DOCKER_BUILD_ENABLED, 'true')
@@ -50,7 +56,7 @@ jobs:
         with:
           push: true
           tags: |
-            "bigbluebutton/bbb-build:${{ steps.ci_branch_name.outputs.branch }}-${{ steps.date.outputs.date }}"
+            "bigbluebutton/bbb-build:${{ env.BRANCH_NAME }}-${{ env.TAG_NAME }}"
           context: .
           cache-from: type=registry,ref=user/app:latest
           cache-to: type=inline
