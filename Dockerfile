@@ -82,6 +82,7 @@ RUN apt-get update && apt-get install -y  \
   libsndfile-dev          \
   libspeex-dev            \
   libssl-dev              \
+  libsctp-dev             \
   libtiff-dev             \
   uuid-dev                \
   openssl                 \
