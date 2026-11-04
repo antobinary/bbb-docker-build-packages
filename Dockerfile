@@ -13,7 +13,7 @@ ENV GO_VERSION=1.27.3
 ENV NODE_VERSION=24.22.1
 ENV SBT_VERSION=1.10.7
 
-ENV GOPATH=/root/go
+ENV GOPATH=/tools/go
 ENV JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
 ENV SBT_HOME=/tools/sbt
 
@@ -24,11 +24,13 @@ RUN apt-get update && apt-get install -y \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
-# base (unzip: sbt zip here, bbb-freeswitch-sounds and bbb-presentation-video in the package builds)
+# base (unzip: sbt zip here, bbb-freeswitch-sounds and bbb-presentation-video in the package builds;
+# lsb-release: coturn's configure consults lsb_release and picks its Ubuntu code path from it)
 RUN apt-get update && apt-get install -y \
   build-essential \
   curl \
   git-core \
+  lsb-release \
   ruby-dev \
   unzip \
   && apt-get clean \
@@ -117,8 +119,9 @@ RUN apt-get update && apt-get install -y  \
   && rm -rf /var/lib/apt/lists/*
 
 
-WORKDIR /tools
-
+# sbt and Go are extracted into /, where they have always landed (the former "RUN cd tools" never
+# took effect): Go records GOROOT and GOPATH in every binary it builds, so moving them changes
+# the packages. The /usr/bin links point at them.
 RUN wget --no-verbose https://github.com/sbt/sbt/releases/download/v${SBT_VERSION}/sbt-${SBT_VERSION}.zip \
   && unzip -q sbt-${SBT_VERSION}.zip \
   && ln -s ${PWD}/sbt/bin/sbt /usr/bin/sbt \
@@ -128,5 +131,3 @@ RUN wget --no-verbose https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.g
   && tar -xzf go${GO_VERSION}.linux-amd64.tar.gz \
   && ln -s ${PWD}/go/bin/go /usr/bin/go \
   && rm go${GO_VERSION}.linux-amd64.tar.gz
-
-WORKDIR /
