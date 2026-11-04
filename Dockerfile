@@ -34,8 +34,9 @@ RUN apt-get update && apt-get install -y \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
-# Build packages
+# Build packages (equivs: the bigbluebutton meta-package build runs equivs-build; it depends on debhelper)
 RUN apt-get update && apt-get -y install --no-install-recommends \
+  equivs \
   fakeroot \
   git \
   openjdk-21-jdk \
