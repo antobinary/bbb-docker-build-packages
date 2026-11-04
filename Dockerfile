@@ -10,65 +10,38 @@ ARG CACHE_BUST=1
 ENV DEBIAN_FRONTEND=noninteractive
 
 ENV GO_VERSION=1.27.3
-ENV GRADLE_VERSION=9.8.1
-ENV GRAILS_VERSION=8.0.0
 ENV NODE_VERSION=24.22.1
 ENV SBT_VERSION=1.10.7
 
-ENV GRADLE_HOME=/tools/gradle-${GRADLE_VERSION}
-ENV GRAILS_HOME=/tools/grails/grails-${GRAILS_VERSION}
-ENV GOPATH=/tools/go
+ENV GOPATH=/root/go
 ENV JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
 ENV SBT_HOME=/tools/sbt
 
-RUN touch /tmp/a.txt
-
 # Make sure the repository information is up to date
 RUN apt-get update && apt-get install -y \
-  apt-utils       \
   ca-certificates \
-  openssh-server  \
-  vim             \
   wget            \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
-# base
+# base (unzip: sbt zip here, bbb-freeswitch-sounds and bbb-presentation-video in the package builds)
 RUN apt-get update && apt-get install -y \
-  apt-transport-https \
   build-essential \
-  checkinstall \
   curl \
   git-core \
-  lsb-release \
-  ruby-dev
-
-# Build packages
-RUN apt-get update && apt-get -y install --no-install-recommends \
-  cdbs \
-  debhelper \
-  devscripts \
-  equivs \
-  fakeroot \
-  git \
-  openjdk-21-jdk \
-  libfreemarker-java \
-  libgoogle-gson-java \
-  libmaven-assembly-plugin-java \
-  libmaven-compiler-plugin-java \
-  libyaml-dev \
-  maven-debian-helper \
-  python3 \
-  python3-apt \
-  python3-debian \
-  python3-yaml \
-  subversion \
+  ruby-dev \
+  unzip \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
-# ubuntu speciphic:
-RUN apt-get update && apt-get install -y \
-  software-properties-common \
+# Build packages
+RUN apt-get update && apt-get -y install --no-install-recommends \
+  fakeroot \
+  git \
+  openjdk-21-jdk \
+  libyaml-dev \
+  python3 \
+  python3-yaml \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
@@ -95,7 +68,6 @@ RUN apt-get update && apt-get install -y \
   make \
   pkg-config  \
   sqlite3 \
-  unixodbc \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
@@ -103,43 +75,18 @@ RUN apt-get update && apt-get install -y  \
   bison	              		\
   cmake                   \
   gawk                    \
-  groff                   \
-  groff-base	          	\
-  liba52-0.7.4-dev        \
-  libapr1-dev             \
-  libasound2-dev          \
-  libavcodec-dev          \
-  libavformat-dev         \
- # libavresample-dev     	\
-  libavutil-dev           \
-  libdb-dev               \
   libexpat1-dev           \
-  libgdbm-dev             \
-  libgnutls28-dev         \
-  libladspa-ocaml-dev     \
   liblua5.4-dev           \
-  libmemcached-dev        \
-  libmp3lame-dev          \
-  libogg-dev              \
   libopusfile-dev         \
-  libperl-dev		          \
-  libpq-dev               \
   libsndfile-dev          \
-  libsnmp-dev             \
   libspeex-dev            \
   libssl-dev              \
-  libswscale-dev          \
   libtiff-dev             \
-  libvlc-dev              \
-  libvorbis-dev           \
-  libx11-dev              \
-  odbc-postgresql         \
+  uuid-dev                \
   openssl                 \
   opus-tools              \
-  portaudio19-dev         \
   python3-dev              \
   python3-pip             \
-  unixodbc-dev            \
   yasm                    \
   jq                      \
   moreutils               \
@@ -168,19 +115,7 @@ RUN apt-get update && apt-get install -y  \
   && rm -rf /var/lib/apt/lists/*
 
 
-RUN mkdir tools
-RUN cd tools
-
-ENV APACHE_GRAILS=apache-grails-${GRAILS_VERSION}-bin
-RUN wget --no-verbose https://github.com/apache/grails-core/releases/download/v${GRAILS_VERSION}/${APACHE_GRAILS}.zip \
-  && unzip -q ${APACHE_GRAILS}.zip \
-  && ln -s ${PWD}/${APACHE_GRAILS}/bin/grails /usr/bin/grails \
-  && rm -f ${APACHE_GRAILS}.zip
-
-RUN wget --no-verbose https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-all.zip \
-  && unzip -q gradle-${GRADLE_VERSION}-all.zip \
-  && ln -s ${PWD}/gradle-${GRADLE_VERSION}/bin/gradle /usr/bin/gradle \
-  && rm -f gradle-${GRADLE_VERSION}-all.zip
+WORKDIR /tools
 
 RUN wget --no-verbose https://github.com/sbt/sbt/releases/download/v${SBT_VERSION}/sbt-${SBT_VERSION}.zip \
   && unzip -q sbt-${SBT_VERSION}.zip \
@@ -192,4 +127,4 @@ RUN wget --no-verbose https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.g
   && ln -s ${PWD}/go/bin/go /usr/bin/go \
   && rm go${GO_VERSION}.linux-amd64.tar.gz
 
-RUN cd ..
+WORKDIR /
